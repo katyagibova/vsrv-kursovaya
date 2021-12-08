@@ -40,7 +40,7 @@
       <v-col cols="3" align-self="center">
         <p class="text">Получено:</p>
         <p class="text">бруса - <b>{{countB}}</b><v-icon color="#1E1918">mdi-arrow-right-thin</v-icon> </p>
-        <p class="text">горбылей - <b>{{countH}}</b><v-icon color="#1E1918">mdi-arrow-down-thin</v-icon> </p>
+        <p class="text">горбылей - <b>{{countG}}</b><v-icon color="#1E1918">mdi-arrow-down-thin</v-icon> </p>
       </v-col>
       <v-col cols="3">
         <v-progress-linear
@@ -66,10 +66,10 @@
         color="#B64D2F"
         buffer-value="0"
         height="17px"
-        :value="progress"
+        :value="progressG"
         stream
         >
-          <strong>{{ Math.ceil(progress) }}%</strong>
+          <strong>{{ Math.ceil(progressG) }}%</strong>
         </v-progress-linear>
         <v-img contain src="@/assets/secondE.png" alt="Krafter E" max-height="70px">
         </v-img>
@@ -149,17 +149,23 @@
         boolCurvature: 0,
         allH: [],
         allB: [],
+        allG: [],
         index: 0,
         indexB: 0,
+        indexG: 0,
         hQueue: 0,
         progress: 0,
         progressB: 0,
+        progressG: 0,
         interval: 0,
         intervalB: 0,
+        intervalG: 0,
         countH: 0,
         countB: 0,
+        countG: 0,
         i: 0,
         iB: 0,
+        iG: 0,
       }
     },
     watch: {
@@ -173,6 +179,12 @@
         if (val <= 100) return
 
         this.secondMWorking()
+      },
+
+      progressG (val) {
+        if (val <= 100) return
+
+        this.secondEWorking()
       },
     },
     methods:{
@@ -188,6 +200,12 @@
         }, 2000)
       },
 
+      activateG() {
+        this.intervalG = setInterval(() => {
+          this.progressG = this.progressG + 10
+        }, 2000)
+      },
+
       openHDialog(){
         this.diameter = 0
         this.curvature = 0
@@ -196,9 +214,13 @@
 
       firstWorking(){
         this.i++
-        //this.addNewB()
         console.log("Надеюсь тут заканчивается распил 1 хлыста")
-        console.log(this.i)
+        if(this.i == 2 || this.indexB != 0){
+          this.addNewB()
+        }
+        if(this.i == 2 || this.indexG != 0){
+          this.addNewG()
+        }
         if(this.countH == 0){
           this.progress = 0
           setTimeout(() => { clearInterval(this.interval) }, 0);
@@ -218,6 +240,9 @@
       secondMWorking(){
         this.iB++
         console.log("Надеюсь тут заканчивается распил 1 бруса")
+        if(this.iB == 2 || this.indexG != 0){
+          this.addNewG()
+        }
         if(this.countB == 0){
           this.progressB = 0
           setTimeout(() => { clearInterval(this.intervalB) }, 0);
@@ -230,6 +255,25 @@
             this.activateB()
           }
           this.countB--
+          return true
+        }
+      },
+
+      secondEWorking(){
+        this.iG++
+        console.log("Надеюсь тут заканчивается распил 1 горбыля")
+        if(this.countG == 0){
+          this.progressG = 0
+          setTimeout(() => { clearInterval(this.intervalG) }, 0);
+          this.indexG = 0
+          this.allG = []
+          return true
+        } else {
+          this.progressG = 0
+          if(this.iG === 1){
+            this.activateG()
+          }
+          this.countG--
           return true
         }
       },
@@ -260,7 +304,6 @@
           this.countH = this.allH.length - 1
         }
 
-        console.log(this.allH)
         this.addNewHDialog = false
         this.index++
         if(this.index === 1){
@@ -268,30 +311,39 @@
           this.i = 0
           this.firstWorking()
         }
-        console.log(this.countH)
       },
 
       addNewB(){
-        // for(let b = 0; b < 2; b++){
-        let newObject = {
-          error: false,
-        }
-        this.allB.push(newObject)
-        // }
-        
-
-        if(this.allB.length == 1){
-          this.countB = this.allB.length
-        } else {
-          this.countB = this.allB.length - 1
+        for(let b = 0; b < 1; b++){
+          let newObject = {
+            error: false,
+          }
+          this.allB.push(newObject)
+          this.countB++
         }
 
-        //console.log(this.allB)
         this.indexB++
-        if(this.index === 1){
+        if(this.indexB === 1){
           this.intervalB = 0
           this.iB = 0
           this.secondMWorking()
+        }
+      },
+
+      addNewG(){
+        for(let g = 0; g < 2; g++){
+          let newObject = {
+            error: false,
+          }
+          this.allG.push(newObject)
+          this.countG++
+        }
+
+        this.indexG++
+        if(this.indexG === 1){
+          this.intervalG = 0
+          this.iG = 0
+          this.secondEWorking()
         }
       }
     },
