@@ -74,8 +74,10 @@
         <v-img contain src="@/assets/secondE.png" alt="Krafter E" max-height="70px">
         </v-img>
         <p class="text" style="width: 115px;">Krafter E</p>
-        
-
+      </v-col>
+      <v-col cols="3" align-self="center">
+        <p class="text">Получено досок:</p>
+        <p class="text"><b>{{allBoards}}</b></p>
       </v-col>
     </v-row>
     <v-dialog
@@ -133,6 +135,102 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog
+    v-model="Krafter2Error"
+    max-width="600px"
+    >
+      <v-card>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-spacer></v-spacer>
+              <v-col
+              cols="6"
+              align-self="center"
+              >
+                <p class="text" style="color: red; margint-top: 30px">ОШИБКА на Krafter 2.0</p>
+              </v-col>
+              <v-spacer></v-spacer>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="error"
+            text
+            @click="Krafter2Error = false"
+          >
+            Устранить
+          </v-btn>
+          <v-spacer></v-spacer>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog
+    v-model="KrafterM"
+    max-width="600px"
+    >
+      <v-card>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-spacer></v-spacer>
+              <v-col
+              cols="6"
+              align-self="center"
+              >
+                <p class="text" style="color: red; margint-top: 30px">ОШИБКА на Krafter M</p>
+              </v-col>
+              <v-spacer></v-spacer>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="error"
+            text
+            @click="KrafterM = false"
+          >
+            Устранить
+          </v-btn>
+          <v-spacer></v-spacer>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <v-dialog
+    v-model="KrafterE"
+    max-width="600px"
+    >
+      <v-card>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-spacer></v-spacer>
+              <v-col
+              cols="6"
+              align-self="center"
+              >
+                <p class="text" style="color: red; margint-top: 30px">ОШИБКА на Krafter E</p>
+              </v-col>
+              <v-spacer></v-spacer>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="error"
+            text
+            @click="KrafterE = false"
+          >
+            Устранить
+          </v-btn>
+          <v-spacer></v-spacer>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -148,6 +246,8 @@
         curvature: 0,
         boolCurvature: 0,
         allH: [],
+        allHObjects: [],
+        numberOfHObject: -1,
         allB: [],
         allG: [],
         index: 0,
@@ -166,24 +266,33 @@
         i: 0,
         iB: 0,
         iG: 0,
+        heightB: 0,
+        lengthB: 0,
+        boardsNumberB: 0,
+        allBoards: 0,
+        Krafter2Error: false,
       }
     },
     watch: {
       progress (val) {
         if (val <= 100) return
 
+        
         this.firstWorking()
       },
 
       progressB (val) {
         if (val <= 100) return
 
+        this.numberOfHObject++
+        this.allBoards += this.allHObjects[this.numberOfHObject].quantityBoards
         this.secondMWorking()
       },
 
       progressG (val) {
         if (val <= 100) return
-
+        
+        this.allBoards++
         this.secondEWorking()
       },
     },
@@ -215,12 +324,18 @@
       firstWorking(){
         this.i++
         console.log("Надеюсь тут заканчивается распил 1 хлыста")
+        
+
+        //Добавление бруса
         if(this.i == 2 || this.indexB != 0){
           this.addNewB()
         }
+        
+        //Добавление горбыля
         if(this.i == 2 || this.indexG != 0){
           this.addNewG()
         }
+
         if(this.countH == 0){
           this.progress = 0
           setTimeout(() => { clearInterval(this.interval) }, 0);
@@ -228,6 +343,13 @@
           this.allH = []
           return true
         } else {
+          //Генерация возникновения ошибки (вероятность возникновения ошибки = 10%)
+          let err = Math.random()
+          if(err >= 0.9){
+            this.Krafter2Error = true
+          }
+
+          //Зашрузка хлыста
           this.progress = 0
           if(this.i === 1){
             this.activate()
@@ -250,6 +372,10 @@
           this.allB = []
           return true
         } else {
+          let err = Math.random()
+          if(err >= 0.9){
+            this.KrafterM = true
+          }
           this.progressB = 0
           if(this.iB === 1){
             this.activateB()
@@ -269,6 +395,10 @@
           this.allG = []
           return true
         } else {
+          let err = Math.random()
+          if(err >= 0.9){
+            this.KrafterE = true
+          }
           this.progressG = 0
           if(this.iG === 1){
             this.activateG()
@@ -279,7 +409,7 @@
       },
 
       addNewH(){
-        if(this.diameter >= 12 && this.diameter <= 46){
+        if(this.diameter >= 19 && this.diameter <= 46){
           this.boolDiameter = true
         } else {
           this.boolDiameter = false
@@ -289,14 +419,36 @@
         } else {
           this.boolCurvature = true
         }
+
+        //Расчет количества полученных досок в зависимостиот диаметра хлыста
+        let a = Number(this.diameter)*10
+
+        if(a < 300){
+          this.heightB = 150
+        } 
+
+        // ????
+        // else if(a >= 300 && a < 450){
+        //   this.heightB = 300
+        // } else if (a >= 450){
+        //   this.heightB = 450
+        // }
+        this.lengthB = Math.sqrt(Math.pow(Number(this.diameter)*10, 2) - Math.pow(this.heightB, 2))
+
+        this.boardsNumberB = Math.trunc(this.lengthB / 25)
+        //console.log(this.boardsNumberB)
+
         // if(this.boolDiameter === false || this.boolCurvature === false){
         //   this.errorDialog = true
         // }
         let newObject = {
           diameter: this.boolDiameter,
           curvature: this.boolCurvature,
+          quantityBoards: this.boardsNumberB,
         }
         this.allH.push(newObject)
+        this.allHObjects.push(newObject)
+        
 
         if(this.allH.length == 1){
           this.countH = this.allH.length
