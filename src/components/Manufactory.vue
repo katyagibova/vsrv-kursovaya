@@ -9,6 +9,18 @@
           Загрузить новый хлыст
         </v-btn>
       </v-col>
+      <v-col>
+        <v-btn
+        @click="errorEr">
+          Ошибка
+        </v-btn>
+      </v-col>
+      <v-col>
+        <v-btn 
+        @click="errorFix">
+          Устранить ошибку
+        </v-btn>
+      </v-col>
     </v-row>
     <v-row>
       <v-col align-self="center" cols="3">
@@ -136,8 +148,9 @@
       </v-card>
     </v-dialog>
     <v-dialog
-    v-model="Krafter2Error"
+    v-model="KraftersError"
     max-width="600px"
+    persistent
     >
       <v-card>
         <v-card-text>
@@ -148,7 +161,7 @@
               cols="6"
               align-self="center"
               >
-                <p class="text" style="color: red; margint-top: 30px">ОШИБКА на Krafter 2.0</p>
+                <p class="text" style="color: red; margint-top: 30px">ОШИБКА на {{machineName}}</p>
               </v-col>
               <v-spacer></v-spacer>
             </v-row>
@@ -159,7 +172,7 @@
           <v-btn
             color="error"
             text
-            @click="Krafter2Error = false"
+            @click="errorFix"
           >
             Устранить
           </v-btn>
@@ -167,70 +180,14 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-dialog
-    v-model="KrafterM"
-    max-width="600px"
+    <v-snackbar
+    color="#B64D2F"
+    width="400px"
+    v-model="snackbarError"
+    :vertical="vertical"
     >
-      <v-card>
-        <v-card-text>
-          <v-container>
-            <v-row>
-              <v-spacer></v-spacer>
-              <v-col
-              cols="6"
-              align-self="center"
-              >
-                <p class="text" style="color: red; margint-top: 30px">ОШИБКА на Krafter M</p>
-              </v-col>
-              <v-spacer></v-spacer>
-            </v-row>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="error"
-            text
-            @click="KrafterM = false"
-          >
-            Устранить
-          </v-btn>
-          <v-spacer></v-spacer>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <v-dialog
-    v-model="KrafterE"
-    max-width="600px"
-    >
-      <v-card>
-        <v-card-text>
-          <v-container>
-            <v-row>
-              <v-spacer></v-spacer>
-              <v-col
-              cols="6"
-              align-self="center"
-              >
-                <p class="text" style="color: red; margint-top: 30px">ОШИБКА на Krafter E</p>
-              </v-col>
-              <v-spacer></v-spacer>
-            </v-row>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="error"
-            text
-            @click="KrafterE = false"
-          >
-            Устранить
-          </v-btn>
-          <v-spacer></v-spacer>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+      <p class="text" style="color: #fff">{{ textError }}</p>
+    </v-snackbar>
   </div>
 </template>
 
@@ -241,6 +198,8 @@
       return{
         addNewHDialog: false,
         errorDialog: false,
+        snackbarError: false,
+        textError: '',
         diameter: 0,
         boolDiameter: 0,
         curvature: 0,
@@ -270,13 +229,15 @@
         lengthB: 0,
         boardsNumberB: 0,
         allBoards: 0,
-        Krafter2Error: false,
+        KraftersError: false,
+        machineName: false,
+        KrafterM: false,
+        KrafterE: false,
       }
     },
     watch: {
       progress (val) {
         if (val <= 100) return
-
         
         this.firstWorking()
       },
@@ -300,7 +261,7 @@
       activate() {
         this.interval = setInterval(() => {
           this.progress = this.progress + 10
-        }, 2000)
+        }, 1000)
       },
 
       activateB() {
@@ -323,6 +284,27 @@
 
       firstWorking(){
         this.i++
+        let num = this.allHObjects.length - 1
+        if(this.allHObjects[num].diameter === false && this.allHObjects[num].curvature === false){
+          console.log("Ошибка изгиба и диаметра")
+          this.textError = "Хлыст не может быть распилен на лесопильной линии KRAFTER из-за неподходящего диаметра и большого искривления"
+          this.snackbarError = true
+          this.countH--
+          this.allHObjects.splice(num, 1)
+        } else if(this.allHObjects[num].diameter === false){
+          console.log("Ошибка диаметра")
+          this.textError = "Хлыст не может быть распилен на лесопильной линии KRAFTER из-за неподходящего диаметра"
+          this.snackbarError = true
+          this.countH--
+          this.allHObjects.splice(num, 1)
+        } else if (this.allHObjects[num].curvature === false){
+          console.log("Ошибка изгиба")
+          this.textError = "Хлыст не может быть распилен на лесопильной линии KRAFTER из-за слишком большого искривления"
+          this.snackbarError = true
+          this.countH--
+          this.allHObjects.splice(num, 1)
+        }
+        
         console.log("Надеюсь тут заканчивается распил 1 хлыста")
         
 
@@ -346,7 +328,11 @@
           //Генерация возникновения ошибки (вероятность возникновения ошибки = 10%)
           let err = Math.random()
           if(err >= 0.9){
-            this.Krafter2Error = true
+            this.machineName = "Krafter 2.0"
+            this.KraftersError = true
+            setTimeout(() => { clearInterval(this.interval) }, 0);
+            setTimeout(() => { clearInterval(this.intervalB) }, 0);
+            setTimeout(() => { clearInterval(this.intervalG) }, 0);
           }
 
           //Зашрузка хлыста
@@ -374,7 +360,11 @@
         } else {
           let err = Math.random()
           if(err >= 0.9){
-            this.KrafterM = true
+            this.machineName = "Krafter M"
+            this.KraftersError = true
+            setTimeout(() => { clearInterval(this.interval) }, 0);
+            setTimeout(() => { clearInterval(this.intervalB) }, 0);
+            setTimeout(() => { clearInterval(this.intervalG) }, 0);
           }
           this.progressB = 0
           if(this.iB === 1){
@@ -397,7 +387,11 @@
         } else {
           let err = Math.random()
           if(err >= 0.9){
-            this.KrafterE = true
+            this.machineName = "Krafter E"
+            this.KraftersError = true
+            setTimeout(() => { clearInterval(this.interval) }, 0);
+            setTimeout(() => { clearInterval(this.intervalB) }, 0);
+            setTimeout(() => { clearInterval(this.intervalG) }, 0);
           }
           this.progressG = 0
           if(this.iG === 1){
@@ -448,13 +442,7 @@
         }
         this.allH.push(newObject)
         this.allHObjects.push(newObject)
-        
-
-        if(this.allH.length == 1){
-          this.countH = this.allH.length
-        } else {
-          this.countH = this.allH.length - 1
-        }
+        this.countH++
 
         this.addNewHDialog = false
         this.index++
@@ -497,6 +485,25 @@
           this.iG = 0
           this.secondEWorking()
         }
+      },
+      errorEr(){
+        setTimeout(() => { clearInterval(this.interval) }, 0);
+        setTimeout(() => { clearInterval(this.intervalB) }, 0);
+        setTimeout(() => { clearInterval(this.intervalG) }, 0);
+      },
+
+      errorFix(){
+        this.KraftersError = false
+
+        if(this.index !== 0){
+          this.activate()
+        }
+        if(this.indexB !== 0){
+          this.activateB()
+        }
+        if(this.indexG !== 0){
+          this.activateG()
+        }        
       }
     },
     created(){
