@@ -9,18 +9,6 @@
           Загрузить новый хлыст
         </v-btn>
       </v-col>
-      <v-col>
-        <v-btn
-        @click="errorEr">
-          Ошибка
-        </v-btn>
-      </v-col>
-      <v-col>
-        <v-btn 
-        @click="errorFix">
-          Устранить ошибку
-        </v-btn>
-      </v-col>
     </v-row>
     <v-row>
       <v-col align-self="center" cols="3">
@@ -39,15 +27,6 @@
         <v-img contain src="@/assets/first.png" alt="Krafter 2.0" >
         </v-img>
         <p class="text" style="width: 115px;">Krafter 2.0</p>
-        <!-- <v-sheet
-        color="white"
-        elevation="5"
-        height="130"
-        class="text_step1"
-        style=""
-        >
-          Krafter 2.0
-        </v-sheet> -->
       </v-col>
       <v-col cols="3" align-self="center">
         <p class="text">Получено:</p>
@@ -92,6 +71,30 @@
         <p class="text"><b>{{allBoards}}</b></p>
       </v-col>
     </v-row>
+    <v-row>
+      <v-col>
+        <p class="textTitle">Собранные пакеты: {{boardsBox}}</p>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="3" align-self="center">
+        <p class="text">В очереди: <b>{{readyToDry}}</b> пакетов</p>
+      </v-col>
+      <v-col cols="3">
+        <v-progress-linear
+        color="#B64D2F"
+        buffer-value="0"
+        height="17px"
+        :value="progressSushka"
+        stream
+        >
+          <strong>{{ Math.ceil(progressSushka) }}%</strong>
+        </v-progress-linear>
+        <v-img contain src="@/assets/sushka.png" alt="Sushka" >
+        </v-img>
+        <p class="text" style="width: 115px;">Сушильная камера</p>
+      </v-col>
+    </v-row>
     <v-dialog
       v-model="addNewHDialog"
       max-width="600px"
@@ -110,6 +113,7 @@
               >
                 <v-text-field
                   label="Диаметр"
+                  color="#B64D2F"
                   required
                   v-model="diameter"
                 ></v-text-field>
@@ -122,6 +126,7 @@
                 <v-text-field
                   label="Степень искревления"
                   hint="0, 1, 2, 3"
+                  color="#B64D2F"
                   v-model="curvature"
                 ></v-text-field>
               </v-col>
@@ -131,14 +136,14 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            color="blue darken-1"
+            color="#B64D2F"
             text
             @click="addNewHDialog = false"
           >
             Отмена
           </v-btn>
           <v-btn
-            color="blue darken-1"
+            color="#B64D2F"
             text
             @click="addNewH"
           >
@@ -212,20 +217,23 @@
         index: 0,
         indexB: 0,
         indexG: 0,
-        hQueue: 0,
         progress: 0,
         progressB: 0,
         progressG: 0,
+        progressSushka: 0,
         interval: 0,
         intervalB: 0,
         intervalG: 0,
+        intervalSushka: 0,
         countH: 0,
         countB: 0,
         countG: 0,
-        i: 0,
-        iB: 0,
-        iG: 0,
-        heightB: 0,
+        countS: 0,
+        visitsHQuantity: 0,
+        visitsBQuantity: 0,
+        visitsGQuantity: 0,
+        visitsSQuantity: 0,
+        heightB: 150,
         lengthB: 0,
         boardsNumberB: 0,
         allBoards: 0,
@@ -233,6 +241,8 @@
         machineName: false,
         KrafterM: false,
         KrafterE: false,
+        boardsBox: 0,
+        readyToDry: 0,
       }
     },
     watch: {
@@ -250,12 +260,35 @@
         this.secondMWorking()
       },
 
+      progressSushka (val) {
+        if (val <= 100) return
+        
+        this.sushkaWorking()
+      },
+      
+
       progressG (val) {
         if (val <= 100) return
         
         this.allBoards++
         this.secondEWorking()
       },
+
+      allBoards(val){
+        if(val < 9) return
+
+        this.boardsBox++
+        this.allBoards -= 9
+      },
+
+      boardsBox(val){
+        if(val < 4) return
+
+        this.readyToDry++
+        this.boardsBox -= 4
+        this.countS++
+        this.sushkaWorking()
+      }
     },
     methods:{
       activate() {
@@ -276,6 +309,12 @@
         }, 2000)
       },
 
+      activateSushka() {
+        this.intervalSushka = setInterval(() => {
+          this.progressSushka = this.progressSushka + 10
+        }, 2000)
+      },
+
       openHDialog(){
         this.diameter = 0
         this.curvature = 0
@@ -283,38 +322,33 @@
       },
 
       firstWorking(){
-        this.i++
+        this.visitsHQuantity++
         let num = this.allHObjects.length - 1
         if(this.allHObjects[num].diameter === false && this.allHObjects[num].curvature === false){
-          console.log("Ошибка изгиба и диаметра")
           this.textError = "Хлыст не может быть распилен на лесопильной линии KRAFTER из-за неподходящего диаметра и большого искривления"
           this.snackbarError = true
           this.countH--
           this.allHObjects.splice(num, 1)
         } else if(this.allHObjects[num].diameter === false){
-          console.log("Ошибка диаметра")
           this.textError = "Хлыст не может быть распилен на лесопильной линии KRAFTER из-за неподходящего диаметра"
           this.snackbarError = true
           this.countH--
           this.allHObjects.splice(num, 1)
         } else if (this.allHObjects[num].curvature === false){
-          console.log("Ошибка изгиба")
           this.textError = "Хлыст не может быть распилен на лесопильной линии KRAFTER из-за слишком большого искривления"
           this.snackbarError = true
           this.countH--
           this.allHObjects.splice(num, 1)
         }
         
-        console.log("Надеюсь тут заканчивается распил 1 хлыста")
-        
 
         //Добавление бруса
-        if(this.i == 2 || this.indexB != 0){
+        if(this.visitsHQuantity == 2 || this.indexB != 0){
           this.addNewB()
         }
         
         //Добавление горбыля
-        if(this.i == 2 || this.indexG != 0){
+        if(this.visitsHQuantity == 2 || this.indexG != 0){
           this.addNewG()
         }
 
@@ -337,7 +371,7 @@
 
           //Зашрузка хлыста
           this.progress = 0
-          if(this.i === 1){
+          if(this.visitsHQuantity === 1){
             this.activate()
           }
           this.countH--
@@ -346,9 +380,9 @@
       },
 
       secondMWorking(){
-        this.iB++
+        this.visitsBQuantity++
         console.log("Надеюсь тут заканчивается распил 1 бруса")
-        if(this.iB == 2 || this.indexG != 0){
+        if(this.visitsBQuantity == 2 || this.indexG != 0){
           this.addNewG()
         }
         if(this.countB == 0){
@@ -367,7 +401,7 @@
             setTimeout(() => { clearInterval(this.intervalG) }, 0);
           }
           this.progressB = 0
-          if(this.iB === 1){
+          if(this.visitsBQuantity === 1){
             this.activateB()
           }
           this.countB--
@@ -376,7 +410,7 @@
       },
 
       secondEWorking(){
-        this.iG++
+        this.visitsGQuantity++
         console.log("Надеюсь тут заканчивается распил 1 горбыля")
         if(this.countG == 0){
           this.progressG = 0
@@ -394,10 +428,27 @@
             setTimeout(() => { clearInterval(this.intervalG) }, 0);
           }
           this.progressG = 0
-          if(this.iG === 1){
+          if(this.visitsGQuantity === 1){
             this.activateG()
           }
           this.countG--
+          return true
+        }
+      },
+
+      sushkaWorking(){
+        this.visitsSQuantity++
+        console.log("Надеюсь тут заканчивается распил 1 горбыля")
+        if(this.countS == 0){
+          this.progressSushka = 0
+          setTimeout(() => { clearInterval(this.intervalSushka) }, 0);
+          return true
+        } else {
+          this.progressSushka = 0
+          if(this.visitsSQuantity === 1){
+            this.activateSushka()
+          }
+          this.countS--
           return true
         }
       },
@@ -415,32 +466,16 @@
         }
 
         //Расчет количества полученных досок в зависимостиот диаметра хлыста
-        let a = Number(this.diameter)*10
-
-        if(a < 300){
-          this.heightB = 150
-        } 
-
-        // ????
-        // else if(a >= 300 && a < 450){
-        //   this.heightB = 300
-        // } else if (a >= 450){
-        //   this.heightB = 450
-        // }
         this.lengthB = Math.sqrt(Math.pow(Number(this.diameter)*10, 2) - Math.pow(this.heightB, 2))
 
         this.boardsNumberB = Math.trunc(this.lengthB / 25)
-        //console.log(this.boardsNumberB)
 
-        // if(this.boolDiameter === false || this.boolCurvature === false){
-        //   this.errorDialog = true
-        // }
         let newObject = {
           diameter: this.boolDiameter,
           curvature: this.boolCurvature,
           quantityBoards: this.boardsNumberB,
         }
-        this.allH.push(newObject)
+        //this.allH.push(newObject)
         this.allHObjects.push(newObject)
         this.countH++
 
@@ -448,7 +483,7 @@
         this.index++
         if(this.index === 1){
           this.interval = 0
-          this.i = 0
+          this.visitsHQuantity = 0
           this.firstWorking()
         }
       },
@@ -482,10 +517,11 @@
         this.indexG++
         if(this.indexG === 1){
           this.intervalG = 0
-          this.iG = 0
+          this.visitsGQuantity = 0
           this.secondEWorking()
         }
       },
+
       errorEr(){
         setTimeout(() => { clearInterval(this.interval) }, 0);
         setTimeout(() => { clearInterval(this.intervalB) }, 0);
@@ -523,16 +559,14 @@
   margin: 0 auto;
 }
 
-.text_step1{
+.textTitle{
   font-family: Roboto;
   font-style: normal;
   font-weight: normal;
-  font-size: 22px;
+  font-size: 28px;
   line-height: 32px;
-  color: #1E1918; 
-  text-align: center;
-  align-items: center;
-  padding-top: auto;
-  padding-bottom: auto;
+  color: #1E1918;
+  margin: 0 auto;
 }
+
 </style>
