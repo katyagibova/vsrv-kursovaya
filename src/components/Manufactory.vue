@@ -210,6 +210,7 @@
         boolCurvature: 0,
         allHObjects: [],
         numberOfHObject: -1,
+        hIndex: 0,
         allB: [],
         allG: [],
         index: 0,
@@ -247,6 +248,7 @@
       progress (val) {
         if (val <= 100) return
         
+        this.hIndex++
         this.firstWorking()
       },
 
@@ -320,29 +322,40 @@
 
       firstWorking(){
         this.visitsHQuantity++
-        let num = this.allHObjects.length - 1
-        if(this.allHObjects[num].diameter === false && this.allHObjects[num].curvature === false){
-          this.textError = "Хлыст не может быть распилен на лесопильной линии KRAFTER из-за неподходящего диаметра и большого искривления"
-          this.snackbarError = true
-          this.countH--
-          this.index--
-          this.allHObjects.splice(num, 1)
-          return
-        } else if(this.allHObjects[num].diameter === false){
-          this.textError = "Хлыст не может быть распилен на лесопильной линии KRAFTER из-за неподходящего диаметра"
-          this.snackbarError = true
-          this.countH--
-          this.index--
-          this.allHObjects.splice(num, 1)
-          return
-        } else if (this.allHObjects[num].curvature === false){
-          this.textError = "Хлыст не может быть распилен на лесопильной линии KRAFTER из-за слишком большого искривления"
-          this.snackbarError = true
-          this.countH--
-          this.index--
-          this.allHObjects.splice(num, 1)
-          return
+        
+        let num = this.hIndex
+        console.log(this.allHObjects)
+        console.log(this.allHObjects[num])
+        if(num < this.allHObjects.length){
+          if(this.allHObjects[num].diameter === false && this.allHObjects[num].curvature === false){
+            this.textError = "Хлыст не может быть распилен на лесопильной линии KRAFTER из-за неподходящего диаметра и большого искривления"
+            this.snackbarError = true
+            this.countH--
+            this.index--
+            this.hIndex--
+            this.allHObjects.splice(num, 1)
+            return
+          } else if(this.allHObjects[num].diameter === false){
+            this.textError = "Хлыст не может быть распилен на лесопильной линии KRAFTER из-за неподходящего диаметра"
+            this.snackbarError = true
+            this.countH--
+            this.index--
+            this.hIndex--
+            this.allHObjects.splice(num, 1)
+            return
+          } else if (this.allHObjects[num].curvature === false){
+            this.textError = "Хлыст не может быть распилен на лесопильной линии KRAFTER из-за слишком большого искривления"
+            this.snackbarError = true
+            this.countH--
+            this.index--
+            this.hIndex--
+            this.allHObjects.splice(num, 1)
+            return
+          }
+        } else {
+          this.hIndex = this.allHObjects.length
         }
+        
 
         //Добавление бруса
         if(this.visitsHQuantity >= 2 ){
@@ -370,7 +383,7 @@
             setTimeout(() => { clearInterval(this.intervalG) }, 0);
           }
 
-          //Зашрузка хлыста
+          //Загрузка хлыста
           this.progress = 0
           if(this.visitsHQuantity === 1){
             this.activate()
