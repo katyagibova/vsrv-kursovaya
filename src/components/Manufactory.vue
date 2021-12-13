@@ -208,7 +208,6 @@
         boolDiameter: 0,
         curvature: 0,
         boolCurvature: 0,
-        allH: [],
         allHObjects: [],
         numberOfHObject: -1,
         allB: [],
@@ -326,27 +325,32 @@
           this.textError = "Хлыст не может быть распилен на лесопильной линии KRAFTER из-за неподходящего диаметра и большого искривления"
           this.snackbarError = true
           this.countH--
+          this.index--
           this.allHObjects.splice(num, 1)
+          return
         } else if(this.allHObjects[num].diameter === false){
           this.textError = "Хлыст не может быть распилен на лесопильной линии KRAFTER из-за неподходящего диаметра"
           this.snackbarError = true
           this.countH--
+          this.index--
           this.allHObjects.splice(num, 1)
+          return
         } else if (this.allHObjects[num].curvature === false){
           this.textError = "Хлыст не может быть распилен на лесопильной линии KRAFTER из-за слишком большого искривления"
           this.snackbarError = true
           this.countH--
+          this.index--
           this.allHObjects.splice(num, 1)
+          return
         }
-        
 
         //Добавление бруса
-        if(this.visitsHQuantity == 2 || this.indexB != 0){
+        if(this.visitsHQuantity >= 2 ){
           this.addNewB()
         }
         
         //Добавление горбыля
-        if(this.visitsHQuantity == 2 || this.indexG != 0){
+        if(this.visitsHQuantity >= 2 ){
           this.addNewG()
         }
 
@@ -354,7 +358,6 @@
           this.progress = 0
           setTimeout(() => { clearInterval(this.interval) }, 0);
           this.index = 0
-          this.allH = []
           return true
         } else {
           //Генерация возникновения ошибки (вероятность возникновения ошибки = 10%)
@@ -380,7 +383,7 @@
       secondMWorking(){
         this.visitsBQuantity++
         console.log("Надеюсь тут заканчивается распил 1 бруса")
-        if(this.visitsBQuantity == 2 || this.indexG != 0){
+        if(this.visitsBQuantity >= 2 ){
           this.addNewG()
         }
         if(this.countB == 0){
@@ -399,7 +402,7 @@
             setTimeout(() => { clearInterval(this.intervalG) }, 0);
           }
           this.progressB = 0
-          if(this.visitsBQuantity === 1){
+          if(this.allB.length === 1){
             this.activateB()
           }
           this.countB--
@@ -473,7 +476,6 @@
           curvature: this.boolCurvature,
           quantityBoards: this.boardsNumberB,
         }
-        //this.allH.push(newObject)
         this.allHObjects.push(newObject)
         this.countH++
 
@@ -498,7 +500,7 @@
         this.indexB++
         if(this.indexB === 1){
           this.intervalB = 0
-          this.iB = 0
+          this.visitsBQuantity = 0
           this.secondMWorking()
         }
       },
