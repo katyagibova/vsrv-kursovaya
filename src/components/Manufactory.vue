@@ -189,7 +189,6 @@
     color="#B64D2F"
     width="400px"
     v-model="snackbarError"
-    :vertical="vertical"
     >
       <p class="text" style="color: #fff">{{ textError }}</p>
     </v-snackbar>
@@ -265,7 +264,6 @@
         
         this.sushkaWorking()
       },
-      
 
       progressG (val) {
         if (val <= 100) return
