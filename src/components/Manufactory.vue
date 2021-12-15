@@ -185,6 +185,40 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog
+    v-model="theEnd"
+    max-width="600px"
+    persistent
+    >
+      <v-card>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <v-spacer></v-spacer>
+              <v-col
+              cols="6"
+              align-self="center"
+              >
+                <p class="text" style=" margint-top: 60px">Готово на продажу: 72</p>
+                <p class="text" style=" margint-top: 30px">Обработано: 12</p>
+              </v-col>
+              <v-spacer></v-spacer>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="#B64D2F"
+            text
+            @click="theEnd = false"
+          >
+            Понятно
+          </v-btn>
+          <v-spacer></v-spacer>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-snackbar
     color="#B64D2F"
     width="400px"
@@ -200,6 +234,7 @@
     name: 'Manufactory',
     data () {
       return{
+        theEnd: false,
         addNewHDialog: false,
         errorDialog: false,
         snackbarError: false,
@@ -249,7 +284,7 @@
         if (val <= 100) return
         
         this.hIndex++
-        this.firstWorking()
+        this.krafter2Working()
       },
 
       progressB (val) {
@@ -257,7 +292,7 @@
 
         this.numberOfHObject++
         this.allBoards += this.allHObjects[this.numberOfHObject].quantityBoards
-        this.secondMWorking()
+        this.krafterMWorking()
       },
 
       progressSushka (val) {
@@ -270,7 +305,7 @@
         if (val <= 100) return
         
         this.allBoards++
-        this.secondEWorking()
+        this.krafterEWorking()
       },
 
       allBoards(val){
@@ -320,12 +355,9 @@
         this.addNewHDialog = true
       },
 
-      firstWorking(){
+      krafter2Working(){
         this.visitsHQuantity++
-        
         let num = this.hIndex
-        console.log(this.allHObjects)
-        console.log(this.allHObjects[num])
         if(num < this.allHObjects.length){
           if(this.allHObjects[num].diameter === false && this.allHObjects[num].curvature === false){
             this.textError = "Хлыст не может быть распилен на лесопильной линии KRAFTER из-за неподходящего диаметра и большого искривления"
@@ -357,13 +389,9 @@
         }
         
 
-        //Добавление бруса
+        //Добавление бруса и горбыля
         if(this.visitsHQuantity >= 2 ){
           this.addNewB()
-        }
-        
-        //Добавление горбыля
-        if(this.visitsHQuantity >= 2 ){
           this.addNewG()
         }
 
@@ -393,7 +421,7 @@
         }
       },
 
-      secondMWorking(){
+      krafterMWorking(){
         this.visitsBQuantity++
         console.log("Надеюсь тут заканчивается распил 1 бруса")
         if(this.visitsBQuantity >= 2 ){
@@ -423,7 +451,7 @@
         }
       },
 
-      secondEWorking(){
+      krafterEWorking(){
         this.visitsGQuantity++
         console.log("Надеюсь тут заканчивается распил 1 горбыля")
         if(this.countG == 0){
@@ -452,7 +480,6 @@
 
       sushkaWorking(){
         this.visitsSQuantity++
-        console.log("Надеюсь тут заканчивается распил 1 горбыля")
         if(this.countS == 0){
           this.progressSushka = 0
           setTimeout(() => { clearInterval(this.intervalSushka) }, 0);
@@ -497,7 +524,7 @@
         if(this.index === 1){
           this.interval = 0
           this.visitsHQuantity = 0
-          this.firstWorking()
+          this.krafter2Working()
         }
       },
 
@@ -514,7 +541,7 @@
         if(this.indexB === 1){
           this.intervalB = 0
           this.visitsBQuantity = 0
-          this.secondMWorking()
+          this.krafterMWorking()
         }
       },
 
@@ -531,7 +558,7 @@
         if(this.indexG === 1){
           this.intervalG = 0
           this.visitsGQuantity = 0
-          this.secondEWorking()
+          this.krafterEWorking()
         }
       },
 
