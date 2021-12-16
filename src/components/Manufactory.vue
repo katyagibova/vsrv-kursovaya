@@ -116,6 +116,7 @@
                   color="#B64D2F"
                   required
                   v-model="diameter"
+                  :rules="[rules.required, rules.isFractionalNumber]"
                 ></v-text-field>
               </v-col>
               <v-col
@@ -128,6 +129,8 @@
                   hint="0, 1, 2, 3"
                   color="#B64D2F"
                   v-model="curvature"
+                  required
+                  :rules="[rules.required, rules.isIntNumber]"
                 ></v-text-field>
               </v-col>
             </v-row>
@@ -145,6 +148,7 @@
           <v-btn
             color="#B64D2F"
             text
+            :disabled="!(diameter > 0) && !(curvature > 0)"
             @click="addNewH"
           >
             Добавить
@@ -234,14 +238,27 @@
     name: 'Manufactory',
     data () {
       return{
+        rules: {
+          required: value =>{
+            return !!value || 'Обязательно для заполнения'
+          },
+          isIntNumber: value => {
+            const pattern = /^[0-9]+$/
+            return pattern.test(value) || 'Необходимо ввести целое число'
+          },
+          isFractionalNumber: value => {
+            const pattern = /^(0$|[1-9]\d*(\.\d*[1-9]$)?|0\.\d*[1-9])$/
+            return pattern.test(value) || 'Необходимо ввести положительное число'
+          },
+        },
         theEnd: false,
         addNewHDialog: false,
         errorDialog: false,
         snackbarError: false,
         textError: '',
-        diameter: 0,
+        diameter: null,
         boolDiameter: 0,
-        curvature: 0,
+        curvature: null,
         boolCurvature: 0,
         allHObjects: [],
         numberOfHObject: -1,
@@ -500,7 +517,7 @@
         } else {
           this.boolDiameter = false
         }
-        if(this.curvature == 3){
+        if(this.curvature >= 3){
           this.boolCurvature = false
         } else {
           this.boolCurvature = true
