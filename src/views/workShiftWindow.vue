@@ -10,7 +10,7 @@
           Начать рабочую смену
         </v-btn>
       </v-col>
-      <v-col style="padding-left: 0">
+      <v-col cols="2" style="margin-left: 20px">
         <p class="timer">{{displayMinutes}} : {{displaySeconds}}</p>
       </v-col>
     </v-row>
